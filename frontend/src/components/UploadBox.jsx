@@ -29,7 +29,6 @@ export default function UploadBox() {
   }
 
   const handleFileChange = (e) => pick(e.target.files[0])
-
   const handleDrop = (e) => {
     e.preventDefault()
     setDragging(false)
@@ -43,8 +42,27 @@ export default function UploadBox() {
     const formData = new FormData()
     formData.append("file", file)
     try {
-      await axios.post(`${API_BASE}/upload`, formData)
-      navigate("/dashboard")
+      const res = await axios.post(`${API_BASE}/upload`, formData)
+
+      // Persist project data so Chat and Dashboard can access it
+      // even after the user navigates away and comes back
+      sessionStorage.setItem("codesense_project", JSON.stringify({
+        analysis: res.data.analysis,
+        filename: res.data.filename,
+        size_bytes: res.data.size_bytes,
+        language: res.data.language,
+        file_tree: res.data.file_tree,
+      }))
+
+      navigate("/dashboard", {
+        state: {
+          analysis: res.data.analysis,
+          filename: res.data.filename,
+          size_bytes: res.data.size_bytes,
+          language: res.data.language,
+          file_tree: res.data.file_tree,
+        },
+      })
     } catch (err) {
       setError(err.response?.data?.detail || "Upload failed. Please try again.")
     } finally {
@@ -63,7 +81,6 @@ export default function UploadBox() {
 
   return (
     <div className="mt-10 flex flex-col gap-3">
-      {/* Drop zone */}
       <label
         className={dropZoneClass}
         onDragOver={(e) => { e.preventDefault(); setDragging(true) }}
@@ -88,7 +105,6 @@ export default function UploadBox() {
         />
       </label>
 
-      {/* File pill */}
       {file && (
         <div className="flex items-center gap-2 text-sm text-gray-300 bg-gray-800/60 border border-gray-700/60 px-3 py-2 rounded-lg">
           <FileArchive size={15} className="text-blue-400 shrink-0" />
@@ -106,21 +122,21 @@ export default function UploadBox() {
         </div>
       )}
 
-      {/* Error */}
       {error && (
         <p className="text-xs text-red-400 bg-red-400/8 border border-red-400/20 px-3 py-2 rounded-lg">
           {error}
         </p>
       )}
 
-      {/* Submit */}
       <button
         onClick={uploadFile}
         disabled={!file || loading}
-        className="flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-500 disabled:opacity-40 disabled:cursor-not-allowed px-6 py-2.5 rounded-lg text-white text-sm font-medium transition-colors mt-1"
+        className="flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-500
+                   disabled:opacity-40 disabled:cursor-not-allowed px-6 py-2.5 rounded-lg
+                   text-white text-sm font-medium transition-colors mt-1"
       >
         {loading && <Loader2 size={15} className="animate-spin" />}
-        {loading ? "Uploading…" : "Analyze Code"}
+        {loading ? "Analyzing…" : "Analyze Code"}
       </button>
     </div>
   )
