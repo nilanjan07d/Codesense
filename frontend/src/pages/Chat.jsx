@@ -4,6 +4,8 @@ import Navbar from "../components/Navbar"
 import ChatBox from "../components/ChatBox"
 import { Bot, Sparkles } from "lucide-react"
 
+const API_BASE = import.meta.env.VITE_API_URL || "http://127.0.0.1:8000"
+
 const SUGGESTIONS = [
   "What issues were found?",
   "Explain the file structure",
@@ -91,7 +93,7 @@ function Chat() {
   const handleSuggestion = (text) => {
     const now = new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
     setMessages(prev => [...prev, { role: "user", text, time: now }])
-    fetch("http://127.0.0.1:8000/chat", {
+    fetch(`${API_BASE}/chat`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ message: text, history: messages }),
