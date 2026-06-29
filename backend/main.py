@@ -32,7 +32,7 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=[
         "http://localhost:5173",
-        "https://codesense-lm7h6azo8-nilanjandutta40-gmailcoms-projects.vercel.app",  
+        "https://codesense-five.vercel.app/",  
     ],
     allow_credentials=True,
     allow_methods=["*"],
